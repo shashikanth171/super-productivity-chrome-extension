@@ -2,6 +2,11 @@
 if (!window.isSupExtensionInjected) {
   window.isSupExtensionInjected = true;
   window.supExtensionEventListeners = [];
+
+  if (typeof browser === 'undefined') {
+    var browser = chrome;
+  }
+
   init();
 } else {
   console.warn('SP-EXT: Content Script Injection blocked. Reinitializing...');
@@ -10,7 +15,7 @@ if (!window.isSupExtensionInjected) {
 }
 
 function onJiraRequest(ev) {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     action: 'JIRA_REQUEST',
     source: ev.detail
   });
@@ -26,7 +31,7 @@ function attachEventListenerForApp(evName, evHandlerFn) {
 function init() {
   console.log('SPEX injected');
 
-  chrome.runtime.onMessage.addListener((data) => {
+  browser.runtime.onMessage.addListener((data) => {
     let ev;
     switch (data.type) {
       case 'JIRA_RESPONSE':

@@ -4,6 +4,10 @@ import { IS_DEV } from 'cfg';
 import { JiraApiWrapper } from './jira';
 import { IdleHandler } from './idle-handler';
 
+if (typeof browser === 'undefined') {
+  var browser = chrome;
+}
+
 let isInterfaceInitialized = false;
 const jira = new JiraApiWrapper();
 let SP_URL = 'https://app.super-productivity.com';
@@ -32,7 +36,7 @@ function onIdle(idleTimeInMs) {
 
   getSPTabId((id) => {
     if (id) {
-      chrome.tabs.sendMessage(id, {
+      browser.tabs.sendMessage(id, {
         type: 'IDLE',
         idleTimeInMs
       });
@@ -51,7 +55,7 @@ function handleJiraRequest(request) {
 
       getSPTabId((id) => {
         if (id) {
-          chrome.tabs.sendMessage(id, {
+          browser.tabs.sendMessage(id, {
             type: 'JIRA_RESPONSE',
             response: res
           });
@@ -63,14 +67,13 @@ function handleJiraRequest(request) {
 }
 
 function initInterfaceForTab(passedTabId) {
-  chrome.tabs.executeScript(passedTabId, {
-    file: 'frontendInterface.bundle.js',
-    allFrames: true,
-    runAt: 'document_idle'
+  browser.scripting.executeScript({
+    target: { tabId: passedTabId, allFrames: true },
+    files: ['frontendInterface.bundle.js']
   }, () => {
 
-    if (chrome.runtime.lastError) {
-      console.error(chrome.runtime.lastError);
+    if (browser.runtime.lastError) {
+      console.error(browser.runtime.lastError);
     }
   });
 }
@@ -82,7 +85,7 @@ function initInterfaceForTab(passedTabId) {
 // jira pre-flight issue
 function getSPTabId(cb) {
   let _tabId = false;
-  chrome.tabs.query({
+  browser.tabs.query({
     url: QUERY_URLS.map(url => url + '/*'),
   }, (tabs) => {
     if (tabs && tabs[0]) {
@@ -98,14 +101,14 @@ function getSPTabId(cb) {
 
 // LISTENER
 // ------------------------------------
-chrome.action.onClicked.addListener((tab) => {
+browser.action.onClicked.addListener((tab) => {
   console.log('CLICK', tab);
   if (!isInterfaceInitialized) {
-    chrome.tabs.create({url: SP_URL});
+    browser.tabs.create({url: SP_URL});
   }
 });
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
   getSPTabId((id) => {
     if (!id) {
       throw 'No super productivity tab id';
@@ -130,7 +133,7 @@ function isSpUrl(urlToCheck) {
 // also this logic is required to make sure, it is injected on reloads,
 // but not if the route inside sp app changes
 let tabMap = {};
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   const url = tab.url;
 
   if (

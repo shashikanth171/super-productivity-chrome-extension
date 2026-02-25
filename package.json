@@ -5,6 +5,8 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production node utils/build.js && zip -r sp-ext.zip ./build",
     "build-dev": "cross-env NODE_ENV=development node utils/build.js && zip -r sp-ext.zip ./build",
+    "build-firefox": "web-ext build --source-dir=./build --artifacts-dir=./dist --overwrite-dest",
+    "run-firefox": "web-ext run --source-dir=./build",
     "start": "node utils/webserver.js",
     "start-production": "cross-env NODE_ENV=production node utils/webserver.js"
   },
@@ -16,14 +18,14 @@
     "file-loader": "^0.11.2",
     "fs-extra": "^0.30.0",
     "html-loader": "^0.4.5",
-    "html-webpack-plugin": "5.5.0",
+    "html-webpack-plugin": "^3.2.0",
     "style-loader": "^0.13.0",
+    "web-ext": "^9.3.0",
     "webpack": "3.11.0",
     "webpack-dev-server": "^4.11.1",
     "write-file-webpack-plugin": "3.4.2"
   },
   "dependencies": {
-    "query-string": "^6.0.0",
-    "xhr": "^2.4.1"
+    "query-string": "^6.0.0"
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "Super Productivity",
   "background": {
-    "service_worker": "background.bundle.js"
+    "page": "background.html"
   },
   "action": {
     "default_popup": "popup.html",
@@ -11,6 +11,15 @@
     "128": "icon_128x128.png"
   },
   "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "super-productivity@code.swecha.org",
+      "data_collection_permissions": {
+        "enabled": false,
+        "required": ["none"]
+      }
+    }
+  },
   "content_scripts": [
     {
       "js": [
@@ -25,6 +34,7 @@
   ],
   "permissions": [
     "tabs",
-    "idle"
+    "idle",
+    "scripting"
   ]
 }

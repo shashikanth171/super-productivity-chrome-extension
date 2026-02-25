@@ -1,9 +1,7 @@
-import xhr from 'xhr';
 import queryStringParser from 'query-string';
 
 export class JiraApiWrapper {
   constructor() {
-    this.xhr = xhr;
     this.queryStringParser = queryStringParser.stringify;
   }
 
@@ -71,49 +69,35 @@ export class JiraApiWrapper {
     // cleanup just in case
     const uri = `${base}/${request.pathname}${queryStr}`.trim().replace('//', '/');
 
-    return new Promise((resolve) => {
-
-      this.xhr({
-        uri: uri,
-        method: request.method || 'GET',
-        body: JSON.stringify(request.body),
-        headers: {
-          'authorization': `Basic ${encoded}`,
-          'Content-Type': 'application/json'
-        }
-      }, function (err, res, body) {
-        if (err) {
-          resolve({
-            error: err,
-            requestId: orgRequest.requestId
-          });
-        } else if (res.statusCode >= 300) {
-          resolve({
-            error: res.statusCode,
-            requestId: orgRequest.requestId
-          });
-        } else if (body) {
-          const parsed = JSON.parse(body);
-
-          const err = parsed.errorMessages || parsed.errors;
-          if (err) {
-            resolve({
-              error: err,
-              requestId: orgRequest.requestId
-            });
-          } else {
-            resolve({
-              response: parsed,
-              requestId: orgRequest.requestId
-            });
-          }
-        } else if (!body) {
-          resolve({
-            response: null,
-            requestId: orgRequest.requestId
-          });
-        }
-      });
+    return fetch(uri, {
+      method: request.method || 'GET',
+      body: request.body ? JSON.stringify(request.body) : undefined,
+      headers: {
+        'authorization': `Basic ${encoded}`,
+        'Content-Type': 'application/json'
+      }
+    }).then(async res => {
+      if (!res.ok) {
+        throw new Error(res.status);
+      }
+      const parsed = await res.json();
+      const err = parsed.errorMessages || parsed.errors;
+      if (err) {
+        return {
+          error: err,
+          requestId: orgRequest.requestId
+        };
+      } else {
+        return {
+          response: parsed,
+          requestId: orgRequest.requestId
+        };
+      }
+    }).catch(err => {
+      return {
+        error: err.message || err,
+        requestId: orgRequest.requestId
+      };
     });
   }
 
