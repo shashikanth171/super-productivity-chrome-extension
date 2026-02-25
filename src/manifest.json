@@ -13,7 +13,7 @@
   "manifest_version": 3,
   "browser_specific_settings": {
     "gecko": {
-      "id": "super-productivity@code.swecha.org",
+      "id": "super-productivity-web-extension@code.swecha.org",
       "data_collection_permissions": {
         "enabled": false,
         "required": ["none"]
